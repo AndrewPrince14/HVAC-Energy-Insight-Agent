@@ -1,41 +1,43 @@
 
-<html>
-<head>
-    <title>HVAC Energy Insight Report</title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        h1 { color: #2E86C1; }
-        h2 { color: #1B4F72; }
-        .section { margin-bottom: 20px; }
-    </style>
-</head>
-<body>
+    <html>
+    <head>
+        <title>HVAC Energy Insight Report</title>
+        <style>
+            body { font-family: Arial; padding: 20px; }
+            h1 { color: #2E86C1; }
+            h2 { color: #1B4F72; }
+            .section { margin-bottom: 20px; }
+        </style>
+    </head>
+    <body>
 
-<h1>HVAC Energy Insight Technical Report</h1>
+    <h1>HVAC Energy Insight Technical Report</h1>
 
-<h2>System Summary</h2>
-<p>Total Records: 720</p>
-<p>Average Energy Consumption: 875.99 kWh</p>
-<p>Average COP: 5.03</p>
+    <div class="section">
+    <h2>System Summary</h2>
+    <p>Total Records: 720</p>
+    <p>Average Energy Consumption: 875.99 kWh</p>
+    <p>Average COP: 5.03</p>
+    </div>
 
-<h2>Forecasting (168h)</h2>
-<p>Predicted Average Demand: 868.88 kWh</p>
-<p>Model MAE: 44.75 kWh</p>
+    <div class="section">
+    <h2>Forecasting</h2>
+    <p>Predicted 168-hour Average Demand: 868.88 kWh</p>
+    <p>Model MAE: 44.75 kWh</p>
+    </div>
 
-<h2>Peak Analysis</h2>
-<p>Historical Peak: 1153.48 kWh</p>
-<p>Predicted Peak: 921.07 kWh</p>
-<p>Peak Risk: Normal</p>
+    <div class="section">
+    <h2>Anomaly Detection</h2>
+    <p>Number of Detected Anomalies: 15</p>
+    </div>
 
-<h2>Diagnostics</h2>
-<p>Anomalies Detected: 15</p>
-<p>Root Cause: Behavioral / occupancy-driven load surge likely</p>
-<p>Maintenance Priority: Low</p>
+    <div class="section">
+    <h2>Impact Analysis</h2>
+    <p>Projected Energy Change (168h): -1194.93 kWh</p>
+    <p>Estimated Cost Impact: ₹ -9559.47</p>
+    <p>Estimated CO₂ Impact: -979.85 kg</p>
+    </div>
 
-<h2>Impact Analysis</h2>
-<p>Energy Change (168h): -1194.93 kWh</p>
-<p>Cost Impact: ₹ -9559.47</p>
-<p>CO₂ Impact: -979.85 kg</p>
-
-</body>
-</html>
+    </body>
+    </html>
+    

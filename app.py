@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+from modules.reporting import generate_report
 from modules.forecasting import run_forecasting
 from modules.diagnostics import run_diagnostics
 from modules.data_loader import load_data
@@ -108,55 +109,17 @@ elif difference_kwh < 0:
 else:
     print("No significant energy impact expected.")
 
-# -------------------------
-# HTML REPORT GENERATION
-# -------------------------
 print("\nGenerating HTML decision report...")
 
-report_content = f"""
-<html>
-<head>
-    <title>HVAC Energy Insight Report</title>
-    <style>
-        body {{ font-family: Arial; padding: 20px; }}
-        h1 {{ color: #2E86C1; }}
-        h2 {{ color: #1B4F72; }}
-        .section {{ margin-bottom: 20px; }}
-    </style>
-</head>
-<body>
-
-<h1>HVAC Energy Insight Technical Report</h1>
-
-<h2>System Summary</h2>
-<p>Total Records: {len(df)}</p>
-<p>Average Energy Consumption: {round(df["kWh"].mean(),2)} kWh</p>
-<p>Average COP: {round(df["COP"].mean(),2)}</p>
-
-<h2>Forecasting (168h)</h2>
-<p>Predicted Average Demand: {round(predicted_avg,2)} kWh</p>
-<p>Model MAE: {round(mae,2)} kWh</p>
-
-<h2>Peak Analysis</h2>
-<p>Historical Peak: {round(historical_peak,2)} kWh</p>
-<p>Predicted Peak: {round(predicted_peak,2)} kWh</p>
-<p>Peak Risk: {peak_risk}</p>
-
-<h2>Diagnostics</h2>
-<p>Anomalies Detected: {len(anomalies)}</p>
-<p>Root Cause: {root_cause}</p>
-<p>Maintenance Priority: {maintenance_priority}</p>
-
-<h2>Impact Analysis</h2>
-<p>Energy Change ({forecast_hours}h): {round(projected_energy_change,2)} kWh</p>
-<p>Cost Impact: ₹ {round(projected_cost_change,2)}</p>
-<p>CO₂ Impact: {round(projected_co2_change,2)} kg</p>
-
-</body>
-</html>
-"""
-
-with open("reports/decision_report.html", "w", encoding="utf-8") as f:
-    f.write(report_content)
+generate_report(
+    df,
+    anomalies,
+    predicted_avg,
+    mae,
+    forecast_hours,
+    projected_energy_change,
+    projected_cost_change,
+    projected_co2_change
+)
 
 print("Report saved to reports/decision_report.html")
