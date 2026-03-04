@@ -1,4 +1,5 @@
 def generate_report(
+    scenario,
     df,
     anomalies,
     predicted_avg,
@@ -6,52 +7,129 @@ def generate_report(
     forecast_hours,
     projected_energy_change,
     projected_cost_change,
-    projected_co2_change
+    projected_co2_change,
+    historical_peak,
+    predicted_peak,
+    peak_risk,
+    root_cause,
+    maintenance_priority,
+    total_solar_generated
 ):
 
     report_content = f"""
-    <html>
-    <head>
-        <title>HVAC Energy Insight Report</title>
-        <style>
-            body {{ font-family: Arial; padding: 20px; }}
-            h1 {{ color: #2E86C1; }}
-            h2 {{ color: #1B4F72; }}
-            .section {{ margin-bottom: 20px; }}
-        </style>
-    </head>
-    <body>
+<html>
+<head>
+<title>HVAC Energy Insight Technical Report</title>
 
-    <h1>HVAC Energy Insight Technical Report</h1>
+<style>
 
-    <div class="section">
-    <h2>System Summary</h2>
-    <p>Total Records: {len(df)}</p>
-    <p>Average Energy Consumption: {round(df["kWh"].mean(),2)} kWh</p>
-    <p>Average COP: {round(df["COP"].mean(),2)}</p>
-    </div>
+body {{
+font-family: Arial, sans-serif;
+margin: 40px;
+background-color: #f4f6f9;
+}}
 
-    <div class="section">
-    <h2>Forecasting</h2>
-    <p>Predicted {forecast_hours}-hour Average Demand: {round(predicted_avg,2)} kWh</p>
-    <p>Model MAE: {round(mae,2)} kWh</p>
-    </div>
+h1 {{
+color: #1B4F72;
+}}
 
-    <div class="section">
-    <h2>Anomaly Detection</h2>
-    <p>Number of Detected Anomalies: {len(anomalies)}</p>
-    </div>
+h2 {{
+color: #2E86C1;
+border-bottom: 2px solid #ddd;
+padding-bottom: 6px;
+}}
 
-    <div class="section">
-    <h2>Impact Analysis</h2>
-    <p>Projected Energy Change ({forecast_hours}h): {round(projected_energy_change,2)} kWh</p>
-    <p>Estimated Cost Impact: ₹ {round(projected_cost_change,2)}</p>
-    <p>Estimated CO₂ Impact: {round(projected_co2_change,2)} kg</p>
-    </div>
+.section {{
+background: white;
+padding: 20px;
+margin-bottom: 25px;
+border-radius: 8px;
+box-shadow: 0px 2px 6px rgba(0,0,0,0.08);
+}}
 
-    </body>
-    </html>
-    """
+.metric {{
+font-weight: bold;
+}}
 
-    with open("reports/decision_report.html", "w", encoding="utf-8") as f:
+</style>
+</head>
+
+<body>
+
+<h1>HVAC Energy Insight Decision Report</h1>
+
+<div class="section">
+<h2>Simulation Scenario</h2>
+<p>Active Scenario: <span class="metric">{scenario}</span></p>
+</div>
+
+<div class="section">
+<h2>System Overview</h2>
+<p>Total Records Analysed: <span class="metric">{len(df)}</span></p>
+<p>Average Energy Consumption: <span class="metric">{round(df["kWh"].mean(),2)} kWh</span></p>
+<p>Average System COP: <span class="metric">{round(df["COP"].mean(),2)}</span></p>
+</div>
+
+<div class="section">
+<h2>Forecast Analysis</h2>
+<p>Forecast Horizon: <span class="metric">{forecast_hours} hours</span></p>
+<p>Predicted Average Demand: <span class="metric">{round(predicted_avg,2)} kWh</span></p>
+<p>Forecast Model MAE: <span class="metric">{round(mae,2)} kWh</span></p>
+</div>
+<div class="section">
+<h2>Environmental Conditions</h2>
+<p>Average Temperature: <span class="metric">{round(df["Ambient_Temp"].mean(),2)} °C</span></p>
+<p>Average Humidity: <span class="metric">{round(df["Humidity"].mean(),2)} %</span></p>
+<p>Average Wet Bulb Temperature: <span class="metric">{round(df["WBT"].mean(),2)} °C</span></p>
+</div>
+
+<div class="section">
+<h2>Peak Demand Risk</h2>
+<p>Historical Peak Load: <span class="metric">{round(historical_peak,2)} kWh</span></p>
+<p>Predicted Peak Load: <span class="metric">{round(predicted_peak,2)} kWh</span></p>
+<p>Risk Level: <span class="metric">{peak_risk}</span></p>
+</div>
+
+<div class="section">
+<h2>Diagnostic Intelligence</h2>
+<p>Anomalies Detected: <span class="metric">{len(anomalies)}</span></p>
+<p>Root Cause Assessment: <span class="metric">{root_cause}</span></p>
+<p>Maintenance Priority: <span class="metric">{maintenance_priority}</span></p>
+</div>
+
+<div class="section">
+<h2>Optimization Strategy</h2>
+<p>Chiller Sequencing Optimization Applied</p>
+<p>Energy Efficiency Optimization Evaluated</p>
+</div>
+
+<div class="section">
+<h2>Renewable Energy Integration</h2>
+<p>Total Solar Contribution: <span class="metric">{round(total_solar_generated,2)} kWh</span></p>
+</div>
+
+<div class="section">
+<h2>Impact Quantification</h2>
+<p>Total Grid Energy Reduction: <span class="metric">{round(abs(projected_energy_change),2)} kWh</span></p>
+<p>Estimated Cost Impact: <span class="metric">₹ {round(abs(projected_cost_change),2)}</span></p>
+<p>Estimated CO₂ Impact: <span class="metric">{round(abs(projected_co2_change),2)} kg</span></p>
+</div>
+
+<div class="section">
+<h2>Final Engineering Recommendations</h2>
+<p>• Monitor system efficiency trends continuously.</p>
+<p>• Investigate anomaly patterns for potential operational issues.</p>
+<p>• Maintain optimized chiller sequencing during peak demand periods.</p>
+<p>• Utilize renewable energy offsets where possible to reduce grid dependency.</p>
+</div>
+
+</body>
+</html>
+"""
+
+    filename = f"reports/{scenario}_report.html"
+
+    with open(filename, "w", encoding="utf-8") as f:
         f.write(report_content)
+
+    print(f"Report saved to {filename}")

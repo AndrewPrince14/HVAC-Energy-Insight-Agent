@@ -1,0 +1,89 @@
+
+<html>
+<head>
+<title>Scenario Comparison Report</title>
+
+<style>
+body {
+font-family: Arial;
+margin: 40px;
+background-color: #f4f6f9;
+}
+
+h1 {
+color: #1B4F72;
+}
+
+table {
+width: 100%;
+border-collapse: collapse;
+background: white;
+box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+}
+
+th, td {
+padding: 12px;
+border: 1px solid #ddd;
+text-align: center;
+}
+
+th {
+background-color: #2E86C1;
+color: white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>HVAC Scenario Comparison</h1>
+
+<table>
+<tr>
+<th>Scenario</th>
+<th>Predicted Avg Demand (kWh)</th>
+<th>Predicted Peak (kWh)</th>
+<th>Energy Impact (kWh)</th>
+<th>Cost Impact (₹)</th>
+<th>CO₂ Impact (kg)</th>
+</tr>
+
+<tr>
+<td>normal</td>
+<td>823.54</td>
+<td>971.0</td>
+<td>-9765.71</td>
+<td>145325.66</td>
+<td>14895.88</td>
+</tr>
+
+<tr>
+<td>heatwave</td>
+<td>921.28</td>
+<td>1141.7</td>
+<td>-15564.49</td>
+<td>191715.94</td>
+<td>19650.88</td>
+</tr>
+
+<tr>
+<td>solar_boost</td>
+<td>692.99</td>
+<td>833.88</td>
+<td>-9480.85</td>
+<td>143046.83</td>
+<td>14662.3</td>
+</tr>
+
+<tr>
+<td>equipment_fault</td>
+<td>932.36</td>
+<td>1093.76</td>
+<td>-9259.01</td>
+<td>141272.07</td>
+<td>14480.39</td>
+</tr>
+
+</table>
+</body>
+</html>
