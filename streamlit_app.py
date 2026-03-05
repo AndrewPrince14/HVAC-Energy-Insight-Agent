@@ -36,11 +36,6 @@ st.sidebar.markdown("### ⚡ SYSTEM CONTROL")
 scenario = st.sidebar.selectbox("SIMULATION SCENARIO", ["normal", "heatwave", "equipment_fault", "solar_boost"])
 horizon = st.sidebar.selectbox("FORECAST HORIZON", ["24", "48", "72", "168"], index=3)
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 📄 REPORT VIEWER")
-report_choice = st.sidebar.selectbox("SELECT REPORT", ["HVAC_Technical_Report.pdf", "Scenario Comparison Report"])
-view_report_clicked = st.sidebar.button("VIEW REPORT", type="primary")
-
 # --- DATA PROCESSING ENGINE ---
 df_raw = load_data()
 df = apply_scenario(df_raw, scenario)
@@ -62,7 +57,7 @@ historical_peak = forecast["historical_peak"]
 # If live Chennai temp is above 32C, apply a 5% thermal penalty to the forecast
 if weather['temperature'] > 32.0:
     future_prediction = [val * 1.05 for val in future_prediction]
-    predicted_peak = predicted_peak * 1.05
+    predicted_peak = max(future_prediction)
 
 future_prediction, solar_generated = apply_renewable_offset(future_prediction, int(horizon))
 predicted_avg = np.mean(future_prediction)
@@ -76,23 +71,51 @@ optimization_recs = run_optimization(
 # Mandatory Renaming for Rubric Compliance
 if 'COP' in df.columns:
     df.rename(columns={'COP': 'iKW-TR'}, inplace=True)
+    df['iKW-TR'] = 3.516 / df['iKW-TR']
 
 # --- HEADER SECTION ---
 st.markdown("<div class='main-title'>Industrial HVAC AI Manager</div>", unsafe_allow_html=True)
 st.markdown(f"*Live Facility:* Central IT Park, Chennai | *Operational Scenario:* **{scenario.upper()}**")
 st.divider()
 
-# --- PDF / REPORT VIEWER ---
-if view_report_clicked:
-    if ".pdf" in report_choice:
-        pdf_path = f"reports/{report_choice}"
-        if os.path.exists(pdf_path):
-            with open(pdf_path, "rb") as f:
-                base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-            st.markdown(f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800"></iframe>', unsafe_allow_html=True)
-    if st.button("Close Report Window"):
-        st.rerun()
-    st.markdown("---")
+# --- REPORT VIEWER ---
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 📄 REPORT VIEWER")
+
+reports = {
+    "Normal Scenario Report": "reports/normal_report.html",
+    "Heatwave Scenario Report": "reports/heatwave_report.html",
+    "Equipment Fault Report": "reports/equipment_fault_report.html",
+    "Solar Boost Report": "reports/solar_boost_report.html",
+    "Scenario Comparison Report": "reports/scenario_comparison.html"
+}
+
+report_choice = st.sidebar.selectbox(
+    "SELECT REPORT",
+    list(reports.keys())
+)
+
+if st.sidebar.button("VIEW REPORT"):
+
+    report_path = reports[report_choice]
+
+    if os.path.exists(report_path):
+
+        with open(report_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        st.markdown("### Engineering Report Viewer")
+
+        st.components.v1.html(
+            html_content,
+            height=1000,
+            scrolling=True
+        )
+
+    else:
+        st.error("Report file not found.")
+
 
 # --- THE 5 TABS ARCHITECTURE ---
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Main Dashboard", "📡 Live IoT Stream", "⚙️ Performance Optimization", "🔍 Diagnostic Intelligence", "💬 Conversational AI"])
