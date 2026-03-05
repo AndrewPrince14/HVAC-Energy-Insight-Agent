@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import pandas as pd
 
+from modules.weather_api import get_weather
 from modules.data_loader import load_data
 from modules.scenario_engine import apply_scenario
 from modules.diagnostics import run_diagnostics
