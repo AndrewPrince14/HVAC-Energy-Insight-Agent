@@ -9,7 +9,7 @@ import base64
 import numpy as np
 from datetime import datetime
 
-# --- IMPORT YOUR CORE LOGIC (Strictly following your VS Code structure) ---
+# --- IMPORT YOUR CORE LOGIC ---
 from modules.data_loader import load_data
 from modules.scenario_engine import apply_scenario
 from modules.diagnostics import run_diagnostics
@@ -41,7 +41,7 @@ st.sidebar.markdown("### 📄 REPORT VIEWER")
 report_choice = st.sidebar.selectbox("SELECT REPORT", ["HVAC_Technical_Report.pdf", "Scenario Comparison Report"])
 view_report_clicked = st.sidebar.button("VIEW REPORT", type="primary")
 
-# --- DATA PROCESSING ENGINE (The Pipeline) ---
+# --- DATA PROCESSING ENGINE ---
 df_raw = load_data()
 df = apply_scenario(df_raw, scenario)
 weather = get_weather()
@@ -57,6 +57,12 @@ forecast = run_forecasting(df, int(horizon))
 future_prediction = forecast["future_prediction"]
 predicted_peak = forecast["predicted_peak"]
 historical_peak = forecast["historical_peak"]
+
+# FIX 1: WEATHER-AWARE FORECASTING
+# If live Chennai temp is above 32C, apply a 5% thermal penalty to the forecast
+if weather['temperature'] > 32.0:
+    future_prediction = [val * 1.05 for val in future_prediction]
+    predicted_peak = predicted_peak * 1.05
 
 future_prediction, solar_generated = apply_renewable_offset(future_prediction, int(horizon))
 predicted_avg = np.mean(future_prediction)
@@ -97,9 +103,8 @@ with tab1:
     w1.metric("Outdoor Temperature", f"{weather['temperature']} °C", delta="Satellite Live")
     w2.metric("Relative Humidity", f"{weather['humidity']} %")
     w3.metric("Wind Speed", f"{weather['windspeed']} km/h")
-    # Industrial Logic: Thermal stress based on real temp
-    heat_index = "High" if weather['temperature'] > 32 else "Normal"
-    w4.metric("Thermal Stress Level", heat_index, delta_color="inverse")
+    heat_index = "High (Forecast Adjusted +5%)" if weather['temperature'] > 32 else "Normal"
+    w4.metric("Thermal Stress Level", heat_index, delta_color="inverse" if weather['temperature'] > 32 else "normal")
 
     st.markdown("<div class='section-title'>📊 Facility Energy Performance</div>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
@@ -119,14 +124,19 @@ with tab1:
 
 with tab2:
     st.markdown("<div class='section-title'>📡 Real-Time BMS Telemetry Stream</div>", unsafe_allow_html=True)
+    # FIX 2: REAL-LOOKING BMS TELEMETRY (Iterating over real dataset tail)
     if st.button("▶ Initialize Live Stream Sequence", type="primary"):
         placeholder = st.empty()
         stream_data = []
-        for i in range(20):
+        
+        # Grab the last 20 rows of your actual data
+        live_df = df.tail(20)
+        
+        for index, row in live_df.iterrows():
             packet = {
-                "Time": datetime.now().strftime("%H:%M:%S"),
-                "Instantaneous_kW": 145.2 + (i * 0.1) + (time.time() % 2),
-                "iKW_TR": df['iKW-TR'].mean() + (np.random.randn() * 0.02)
+                "Time": datetime.now().strftime("%H:%M:%S"), # Keeps the illusion of "Live"
+                "Instantaneous_kW": row["kWh"],
+                "iKW_TR": row["iKW-TR"]
             }
             stream_data.append(packet)
             with placeholder.container():
@@ -149,7 +159,6 @@ with tab3:
             st.success(f"💡 {rec}")
     
     st.markdown("#### Scenario Impact Comparison")
-    # This loop uses your real scenario engine logic
     scenarios_list = ["normal", "heatwave", "equipment_fault", "solar_boost"]
     comp_data = []
     for s in scenarios_list:
@@ -169,7 +178,6 @@ with tab4:
         st.metric("Avg Occupancy", int(df["Occupancy"].mean()))
     with col_rca:
         st.markdown("#### Root Cause Analysis (Live Module Data)")
-        # Reactive Pie Chart: Now scales based on real anomalies count
         a_count = len(anomalies)
         fig_rca = px.pie(names=["Equipment Faults", "Behavioral Bias", "System Drift"], values=[a_count, 12, 5], hole=0.4)
         st.plotly_chart(fig_rca, use_container_width=True)
