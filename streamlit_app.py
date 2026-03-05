@@ -8,6 +8,7 @@ import time
 import base64
 import numpy as np
 from datetime import datetime
+from groq import Groq
 
 # --- IMPORT YOUR CORE LOGIC ---
 from modules.data_loader import load_data
@@ -208,8 +209,40 @@ with tab4:
         st.write(f"**Identified Root Cause:** {root_cause}")
 
 with tab5:
-    st.markdown("<div class='section-title'>💬 Conversational AI Agent</div>", unsafe_allow_html=True)
-    st.info("Bilingual Agent (English/Tamil) integration pending final phase deployment.")
+
+    st.markdown("<div class='section-title'>💬 Conversational AI Energy Assistant</div>", unsafe_allow_html=True)
+
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+    user_question = st.text_input("Ask the HVAC AI agent anything about system performance")
+
+    if user_question:
+
+        context = f"""
+        Facility: Central IT Park Chennai
+
+        Scenario: {scenario}
+
+        Current Average Load: {df['kWh'].mean():.2f} kWh
+        Predicted Peak Load: {predicted_peak:.2f} kWh
+        System Efficiency (iKW-TR): {df['iKW-TR'].mean():.2f}
+
+        Weather Temperature: {weather['temperature']} C
+        Humidity: {weather['humidity']} %
+
+        Maintenance Priority: {maintenance_priority}
+        Root Cause Analysis: {root_cause}
+        """
+
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": "You are an industrial HVAC optimization expert helping facility managers."},
+                {"role": "user", "content": context + "\n\nUser Question: " + user_question}
+            ]
+        )
+
+        st.success(response.choices[0].message.content)
 
 st.divider()
 st.caption(f"Central Facility Monitoring Console | {datetime.now().year}")
