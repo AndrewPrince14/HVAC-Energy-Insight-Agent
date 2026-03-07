@@ -93,8 +93,3 @@ streamlit run streamlit_app.py
 
 ---
 
-## Planned Enhancements
-- Real-time BMS sensor integration
-- Multi-facility federated learning
-- Edge deployment for on-premise inference
-- Docker containerization
