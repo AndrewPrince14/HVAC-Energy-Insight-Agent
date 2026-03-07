@@ -24,7 +24,7 @@ def run_forecasting(df, forecast_hours=168):
     last_values = X.iloc[-forecast_hours:] if len(X) >= forecast_hours else X
     future_prediction = model.predict(last_values)
 
-    tree_preds = np.array([tree.predict(last_values) for tree in model.estimators_])
+    tree_preds = np.array([tree.predict(last_values.values) for tree in model.estimators_])
     upper_band = np.percentile(tree_preds, 85, axis=0)
     lower_band = np.percentile(tree_preds, 15, axis=0)
 
@@ -32,7 +32,6 @@ def run_forecasting(df, forecast_hours=168):
     historical_peak = float(df["kWh"].max())
     avg_eff = float(df[eff_col].mean()) if eff_col else 0.0
 
-    # FIX: peak_risk checks BOTH load AND iKW-TR efficiency
     if avg_eff > 0.75:
         peak_risk = "High"
     elif predicted_peak > historical_peak * 0.95:

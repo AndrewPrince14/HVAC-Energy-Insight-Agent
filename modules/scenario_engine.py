@@ -24,19 +24,23 @@ def apply_scenario(df, scenario="normal"):
         df["Occupancy"] = (df["Occupancy"] * 0.15).clip(lower=5)
         df["kWh"] *= 0.55
         df["Ambient_Temp"] -= 4
-        if eff_col: df[eff_col] *= 0.88  # more efficient at night
+        if eff_col: df[eff_col] *= 0.88
 
     elif scenario == "monsoon":
         df["Humidity"] = (df["Humidity"] * 1.35).clip(upper=98)
         df["Ambient_Temp"] -= 2
         df["kWh"] *= 1.08
-        if eff_col: df[eff_col] *= 1.12  # cooling tower stressed by humidity
+        if eff_col: df[eff_col] *= 1.12
 
     elif scenario == "maintenance_mode":
-        # One chiller offline — remaining units overloaded
         df["kWh"] *= 1.20
-        if eff_col: df[eff_col] *= 1.35  # severe degradation
+        if eff_col: df[eff_col] *= 1.35
         df["Occupancy"] = (df["Occupancy"] * 0.7).clip(lower=10)
+
+    # Recalculate WBT after scenario modifies Ambient_Temp / Humidity
+    if "Ambient_Temp" in df.columns and "Humidity" in df.columns:
+        from modules.data_loader import calculate_wbt
+        df["WBT"] = calculate_wbt(df["Ambient_Temp"], df["Humidity"])
 
     return df
 

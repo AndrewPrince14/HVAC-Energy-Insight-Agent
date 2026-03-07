@@ -16,6 +16,9 @@ def generate_report(
     total_solar_generated
 ):
 
+    eff_col = "iKW-TR" if "iKW-TR" in df.columns else "iKW_TR"
+    avg_ikwtr = round(df[eff_col].mean(), 3)
+
     report_content = f"""
 <html>
 <head>
@@ -67,7 +70,7 @@ font-weight: bold;
 <h2>System Overview</h2>
 <p>Total Records Analysed: <span class="metric">{len(df)}</span></p>
 <p>Average Energy Consumption: <span class="metric">{round(df["kWh"].mean(),2)} kWh</span></p>
-<p>Average System COP: <span class="metric">{round(df["COP"].mean(),2)}</span></p>
+<p>Average iKW-TR: <span class="metric">{avg_ikwtr}</span></p>
 </div>
 
 <div class="section">
