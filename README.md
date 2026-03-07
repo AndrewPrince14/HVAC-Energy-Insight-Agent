@@ -1,11 +1,7 @@
 # HVAC Energy Insight Agent
 
 ## Overview
-
-This project implements an AI-driven Energy Insight Agent for HVAC systems, developed for the TN Industry Impact Challenge 2026 (EnergyETA x CoE AI4NetZero, IIT Madras).
-
-The system autonomously analyzes multi-parameter HVAC operational data and generates structured technical decision reports focused on:
-
+An AI-driven Energy Insight Agent that autonomously analyzes multi-parameter HVAC operational data and generates structured technical decision reports focused on:
 - Energy efficiency
 - Peak demand management
 - Fault detection
@@ -15,103 +11,90 @@ The system autonomously analyzes multi-parameter HVAC operational data and gener
 ---
 
 ## Core Parameters
-
 The system processes:
-
 - kWh (Energy Consumption)
 - iKW-TR (Cooling Efficiency)
 - Ambient Temperature
 - Relative Humidity
+- Wet Bulb Temperature (WBT)
 - Occupancy Load Profile
-
-Derived metric:
-
-- COP (Coefficient of Performance)
 
 ---
 
 ## Implemented Capabilities
 
-### Predictive Analytics
+### Scenario Simulation
+- 7 physics-based operational scenarios (Normal, Heatwave, Equipment Fault, Solar Boost, Night Mode, Monsoon, Maintenance Mode)
+- Two-layer Digital Twin (Live weather API + scenario engine)
 
-- 168-hour load forecasting (Random Forest)
+### Predictive Analytics
+- 24/72/168-hour load forecasting (Random Forest, 200 estimators)
+- Confidence bands (15th–85th percentile)
 - Weather-adjusted demand prediction (Open-Meteo API)
-- Peak demand anticipation
 
 ### Diagnostic Intelligence
+- Z-Score anomaly detection (σ = 2.5)
+- Efficiency degradation trend analysis (Stable / Marginal / Degrading)
+- Root cause classification
+- Maintenance priority scoring (0–12)
 
-- Multi-parameter anomaly detection (Isolation Forest)
-- Efficiency degradation trend analysis
-- Root cause classification (equipment vs behavioral)
-- Maintenance priority scoring
+### Optimization
+- Horizon-aware recommendations (immediate / scheduled / strategic)
+- Scenario-aware chiller sequencing (1–3 units)
+- Solar offset calculation
 
 ### Impact Quantification
-
 - Projected energy variation (kWh)
-- Estimated electricity cost impact
-- Estimated CO₂ emission impact
+- Estimated cost impact (₹8.00/kWh TN tariff)
+- CO₂ emission impact (0.82 kg/kWh India grid)
 
 ---
 
 ## Architecture
-
-The system follows a modular structure:
-
-- data_loader.py → Data ingestion and preprocessing
-- diagnostics.py → Health analysis and anomaly detection
-- forecasting.py → ML forecasting and weather integration
-- reporting.py → Automated HTML report generation
-- app.py → System orchestrator
-
-This design enables clarity, maintainability, and scalability toward multi-agent architecture.
+- `data_loader.py` → Data ingestion, WBT calculation, column preprocessing
+- `scenario_engine.py` → Physics-based scenario modifications
+- `diagnostics.py` → Z-Score anomaly detection and priority scoring
+- `forecasting.py` → RandomForest forecasting with confidence bands
+- `chiller_sequencing.py` → Dynamic chiller allocation
+- `optimization.py` → Horizon-aware recommendation engine
+- `renewable.py` → Solar offset calculations
+- `weather_api.py` → Live Open-Meteo API integration
+- `reporting.py` → Automated HTML report generation
+- `streamlit_app.py` → 6-tab industrial dashboard
 
 ---
 
 ## Technical Stack
-
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
+- Python 3.11
+- Pandas, NumPy
+- Scikit-learn (RandomForest)
+- Plotly, Streamlit
+- Groq API (Llama-3.3-70B)
 - Open-Meteo Weather API
-- HTML-based report generation
 
 ---
 
-## Execution
+## Setup
+
+Create a `.env` file:
+```
+GROQ_API_KEY=your_groq_api_key_here
+```
 
 Install dependencies:
-
+```
 pip install -r requirements.txt
+```
 
 Run the system:
-
-python app.py
-
-Generated report location:
-
-reports/decision_report.html
-
----
-
-## Competition Alignment
-
-This solution satisfies:
-
-- Processing of ≥3 core parameters
-- Implementation of ≥2 analytical techniques
-- Explainable technical decision logic
-- Automated HTML technical reporting
-- Weather API integration
-- Modular production-grade structure
+```
+streamlit run streamlit_app.py
+```
 
 ---
 
 ## Planned Enhancements
-
-- Setpoint optimization logic
-- Chiller load balancing recommendations
-- Scenario-based simulation layer
-- Multi-agent orchestration
-- Real-time data streaming
-- Containerized deployment
+- Real-time BMS sensor integration
+- Multi-facility federated learning
+- Edge deployment for on-premise inference
+- Docker containerization
