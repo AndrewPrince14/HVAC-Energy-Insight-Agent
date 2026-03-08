@@ -237,15 +237,16 @@ priority_score = diag["priority_score"]
 anomaly_ratio  = diag["anomaly_ratio"]
 anomaly_desc   = diag["anomaly_description"]
 
-forecast       = run_forecasting(df, horizon)
-future_pred    = forecast["future_prediction"]
-upper_band     = forecast["upper_band"]
-lower_band     = forecast["lower_band"]
-pred_peak      = forecast["predicted_peak"]
-hist_peak      = forecast["historical_peak"]
-peak_risk      = forecast["peak_risk"]
-mae            = forecast["mae"]
-accuracy_pct   = forecast["accuracy_pct"]
+fc_result      = run_forecasting(df, horizon)
+future_pred    = fc_result["future_prediction"]
+upper_band     = fc_result["upper_band"]
+lower_band     = fc_result["lower_band"]
+pred_peak      = fc_result["predicted_peak"]
+hist_peak      = fc_result["historical_peak"]
+peak_risk      = fc_result["peak_risk"]
+mae            = fc_result["mae"]
+accuracy_pct   = fc_result["accuracy_pct"]
+shap_importance = fc_result.get("shap_importance", {})
 
 if weather['temperature'] > 32.0:
     future_pred = [v * 1.05 for v in future_pred]
@@ -269,8 +270,8 @@ opt_recs = run_optimization(pred_avg, df["kWh"].mean(), pred_peak, hist_peak,
 baseline_kwh   = df_raw["kWh"].mean() * horizon
 current_kwh    = pred_avg * horizon
 kwh_saved      = max(baseline_kwh - current_kwh + solar_generated, 0)
-cost_saved     = round(kwh_saved * 8.0, 2)       # ₹8/kWh TN commercial
-co2_saved      = round(kwh_saved * 0.82, 2)      # 0.82 kg CO2/kWh India grid
+cost_saved     = round(kwh_saved * 8.0, 2)
+co2_saved      = round(kwh_saved * 0.82, 2)
 solar_pct      = round((solar_generated / max(current_kwh, 1)) * 100, 1)
 
 # ── HEADER ────────────────────────────────────────────────────────────
@@ -298,7 +299,6 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 with tab1:
-    # Row 1 — Live outdoor from API
     st.markdown("<div class='section-title'>🌍 LIVE OUTDOOR CONDITIONS (Open-Meteo API — Chennai)</div>", unsafe_allow_html=True)
     w1, w2, w3, w4 = st.columns(4)
     w1.metric("Outdoor Temp", f"{weather['temperature']} °C")
@@ -306,8 +306,6 @@ with tab1:
     w3.metric("Wind Speed", f"{weather['windspeed']} km/h")
     w4.metric("Thermal Stress", "HIGH ⚠️" if weather['temperature'] > 32 else "Normal ✅")
 
-    # Row 2 — Scenario adjusted facility conditions
-    # FIX: delta compares to dataset baseline (df_raw), not live API
     st.markdown("<div class='section-title'>🏭 SCENARIO-ADJUSTED FACILITY CONDITIONS</div>", unsafe_allow_html=True)
     wbt_val = round(df['WBT'].mean(), 1) if 'WBT' in df.columns else "N/A"
     facility_temp = round(df['Ambient_Temp'].mean(), 1)
@@ -323,20 +321,16 @@ with tab1:
     f4.metric("Avg Occupancy", f"{int(df['Occupancy'].mean())} pax")
     f5.metric("Scenario", scenario.replace("_"," ").upper())
 
-    # Row 3 — Facility performance
     st.markdown("<div class='section-title'>FACILITY PERFORMANCE</div>", unsafe_allow_html=True)
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Avg Load", f"{df['kWh'].mean():.1f} kWh")
     c2.metric("Predicted Peak", f"{pred_peak:.1f} kWh")
     avg_eff_val = df['iKW-TR'].mean()
-    # FIX: iKW-TR color indicator
     eff_status = "🔴 CRITICAL" if avg_eff_val > 0.75 else "🟡 WARNING" if avg_eff_val > 0.65 else "🟢 HEALTHY"
     c3.metric("iKW-TR Efficiency", f"{avg_eff_val:.3f}", delta=eff_status)
-    # FIX: peak_risk now consistent with iKW-TR
     c4.metric("Peak Risk", peak_risk)
     c5.metric("Forecast MAE", f"{mae:.1f} kWh")
 
-    # Forecast chart with confidence bands
     st.markdown(f"<div class='section-title'>{horizon}-HOUR PREDICTIVE FORECAST</div>", unsafe_allow_html=True)
     hours = list(range(len(future_pred)))
     fig_forecast = go.Figure()
@@ -409,10 +403,29 @@ with tab3:
     with col_left:
         st.markdown("#### Efficiency Benchmarking")
         avg_eff = df['iKW-TR'].mean()
-        eff_color = "#ff4757" if avg_eff > 0.75 else "#ffa502" if avg_eff > 0.65 else "#2ed573"
         st.metric("Live iKW-TR", f"{avg_eff:.3f}", delta="Target < 0.65")
         stress = min(avg_eff / 1.0, 1.0)
         st.progress(stress, text=f"Compressor Stress: {stress:.0%}")
+
+        # ── SHAP FEATURE IMPORTANCE ───────────────────────────────────
+        st.markdown("#### 🧠 SHAP — Forecast Drivers")
+        st.caption("Why is the model predicting this energy demand?")
+        icon_map = {
+            "Ambient_Temp": "🌡️",
+            "Humidity": "💧",
+            "Occupancy": "👥",
+            "WBT": "🌀",
+            "iKW-TR": "⚡",
+            "iKW_TR": "⚡"
+        }
+        if shap_importance:
+            for feature, pct in shap_importance.items():
+                icon = icon_map.get(feature, "📊")
+                label = feature.replace("_", " ")
+                st.markdown(f"{icon} **{label}** — {pct}%")
+                st.progress(min(pct / 100, 1.0))
+        else:
+            st.info("SHAP data unavailable.")
 
         st.markdown("#### Chiller Sequencing")
         cs1, cs2, cs3 = st.columns(3)
@@ -421,7 +434,6 @@ with tab3:
         cs3.metric("Load/Chiller", f"{load_per_ch} kWh")
         st.info(load_status)
 
-        # Per-chiller loading bars
         st.markdown("#### Chiller Loading")
         for i in range(chillers_req):
             load_frac = min(loading_ratio / 100, 1.0)
@@ -485,7 +497,6 @@ with tab4:
         st.write(f"**Degradation Status:** {degradation}")
         st.write(f"**Anomalies:** {a_count} detected ({anomaly_ratio}% of dataset)")
 
-    # iKW-TR trend chart with anomaly highlights
     st.markdown("<div class='section-title'>iKW-TR EFFICIENCY TREND WITH ANOMALY DETECTION</div>", unsafe_allow_html=True)
     fig_trend = go.Figure()
     fig_trend.add_trace(go.Scatter(
@@ -509,7 +520,6 @@ with tab4:
     )
     st.plotly_chart(fig_trend, use_container_width=True)
 
-    # Top anomalies table
     if len(anomalies) > 0:
         st.markdown("<div class='section-title'>TOP ANOMALY EVENTS</div>", unsafe_allow_html=True)
         top_anoms = anomalies.nlargest(8, "max_z")[["Timestamp", "kWh", "iKW-TR", "Ambient_Temp", "max_z", "anomaly_col"]].copy()
@@ -538,6 +548,7 @@ CURRENT STATE:
 - Degradation: {degradation} | Root Cause: {root_cause}
 - Chillers: {chillers_req} active | COP: {opt_cop} | Load/chiller: {load_per_ch} kWh ({loading_ratio}%)
 - Solar Offset: {solar_generated:.0f} kWh | Est. Cost Savings: ₹{cost_saved:,.0f} | CO₂ Avoided: {co2_saved:.0f} kg
+- SHAP Top Driver: {list(shap_importance.keys())[0] if shap_importance else 'N/A'} ({list(shap_importance.values())[0] if shap_importance else 'N/A'}% influence)
 
 RULES: Technical precision. HVAC industry terminology. Reference live data. 6 sentences max unless asked for more. Flag iKW-TR > 0.75 automatically."""
 
@@ -637,7 +648,7 @@ with tab6:
         "Solar Panel Capacity": "120 kWh/hr (08:00–17:00)",
         "Chiller Capacity": "800 kWh per unit",
         "iKW-TR Target": "< 0.65 (Critical > 0.75)",
-        "Forecast Model": "RandomForest 200 estimators",
+        "Forecast Model": "RandomForest 200 estimators + SHAP Explainability",
         "Anomaly Method": "Z-Score (threshold: 2.5σ)",
         "Facility": "Central IT Park, Chennai",
     }

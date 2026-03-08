@@ -1,4 +1,5 @@
 import numpy as np
+import shap
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
@@ -41,6 +42,16 @@ def run_forecasting(df, forecast_hours=168):
     else:
         peak_risk = "Normal"
 
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X_test)
+    mean_shap = np.abs(shap_values).mean(axis=0)
+    total = mean_shap.sum()
+    shap_importance = {
+        features[i]: round(float(mean_shap[i] / total * 100), 1)
+        for i in range(len(features))
+    }
+    shap_importance = dict(sorted(shap_importance.items(), key=lambda x: x[1], reverse=True))
+
     return {
         "future_prediction": future_prediction.tolist(),
         "upper_band": upper_band.tolist(),
@@ -52,4 +63,5 @@ def run_forecasting(df, forecast_hours=168):
         "historical_peak": historical_peak,
         "peak_risk": peak_risk,
         "avg_eff": avg_eff,
+        "shap_importance": shap_importance,
     }
