@@ -28,7 +28,7 @@ The system processes:
 - Two-layer Digital Twin (Live weather API + scenario engine)
 
 ### Predictive Analytics
-- 24/72/168-hour load forecasting (Random Forest, 200 estimators)
+- 24/72/168-hour load forecasting (Random Forest, 200 estimators) with shap explainabilty 
 - Confidence bands (15th–85th percentile)
 - Weather-adjusted demand prediction (Open-Meteo API)
 
@@ -54,7 +54,7 @@ The system processes:
 - `data_loader.py` → Data ingestion, WBT calculation, column preprocessing
 - `scenario_engine.py` → Physics-based scenario modifications
 - `diagnostics.py` → Z-Score anomaly detection and priority scoring
-- `forecasting.py` → RandomForest forecasting with confidence bands
+- `forecasting.py` → RandomForest forecasting with confidence bands with shap explainabilty 
 - `chiller_sequencing.py` → Dynamic chiller allocation
 - `optimization.py` → Horizon-aware recommendation engine
 - `renewable.py` → Solar offset calculations
