@@ -69,6 +69,7 @@ The system processes:
 - Python 3.11
 - Pandas, NumPy
 - Scikit-learn (RandomForest)
+- shap
 - Plotly, Streamlit
 - Groq API (Llama-3.3-70B)
 - Open-Meteo Weather API
