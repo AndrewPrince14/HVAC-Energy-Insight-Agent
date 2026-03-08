@@ -61,6 +61,7 @@ The system processes:
 - `weather_api.py` → Live Open-Meteo API integration
 - `reporting.py` → Automated HTML report generation
 - `streamlit_app.py` → 6-tab industrial dashboard
+![Agent Workflow](docs/architecture_diagram.png)
 
 ---
 
