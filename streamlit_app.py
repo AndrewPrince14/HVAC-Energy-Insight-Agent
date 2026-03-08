@@ -14,6 +14,8 @@ from modules.chiller_sequencing import run_chiller_sequencing
 from modules.renewable import apply_renewable_offset
 from modules.optimization import run_optimization
 from modules.weather_api import get_weather
+from dotenv import load_dotenv
+load_dotenv()
 
 # ── PAGE CONFIG ───────────────────────────────────────────────────────
 st.set_page_config(
