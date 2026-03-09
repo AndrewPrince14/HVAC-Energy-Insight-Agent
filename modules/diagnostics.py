@@ -20,7 +20,8 @@ def run_diagnostics(df):
 
     z_scores = pd.DataFrame()
     for col in check_cols:
-        mean, std = df[col].mean(), df[col].std()
+        mean = float(df[col].mean())
+        std = float(df[col].std())
         z_scores[col] = (df[col] - mean) / std if std > 0 else 0
 
     df["max_z"] = z_scores.abs().max(axis=1)

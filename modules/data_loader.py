@@ -20,9 +20,10 @@ def load_data(path="data/hvac_dataset.csv"):
     df["Timestamp"] = pd.to_datetime(df["Timestamp"])
 
     # Efficiency calculation
-    df["COP"] = 3.517 / df["iKW_TR"]
+    df["COP"] = 3.517 / df["iKW-TR"]
 
     # Add Wet Bulb Temperature
-    df["WBT"] = calculate_wbt(df["Ambient_Temp"], df["Humidity"])
+    if "WBT" not in df.columns:
+        df["WBT"] = calculate_wbt(df["Ambient_Temp"], df["Humidity"])
 
     return df

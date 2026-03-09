@@ -216,10 +216,13 @@ if st.sidebar.button("📂 VIEW REPORT"):
         st.sidebar.error("Report not found.")
 
 # ── DATA PIPELINE ─────────────────────────────────────────────────────
-df_raw = load_data()
+@st.cache_data
+def get_data():
+    return load_data()
+
+df_raw = get_data()
 if 'COP' in df_raw.columns:
-    df_raw = df_raw.rename(columns={'COP': 'iKW-TR'})
-    df_raw['iKW-TR'] = 3.516 / df_raw['iKW-TR']
+    df_raw = df_raw.drop(columns=['COP'])
 
 df = apply_scenario(df_raw, scenario)
 
@@ -237,7 +240,12 @@ priority_score = diag["priority_score"]
 anomaly_ratio  = diag["anomaly_ratio"]
 anomaly_desc   = diag["anomaly_description"]
 
-fc_result      = run_forecasting(df, horizon)
+@st.cache_data
+def get_forecast(scenario, horizon):
+    df_s = apply_scenario(get_data(), scenario)
+    return run_forecasting(df_s, horizon)
+
+fc_result = get_forecast(scenario, horizon)
 future_pred    = fc_result["future_prediction"]
 upper_band     = fc_result["upper_band"]
 lower_band     = fc_result["lower_band"]
