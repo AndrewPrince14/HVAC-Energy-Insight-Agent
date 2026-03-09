@@ -28,7 +28,7 @@ The system processes:
 - Two-layer Digital Twin (Live weather API + scenario engine)
 
 ### Predictive Analytics
-- 24/72/168-hour load forecasting (Random Forest, 200 estimators) with shap explainabilty 
+- 24/72/168-hour load forecasting (Random Forest, 200 estimators) with SHAP explainability
 - Confidence bands (15th–85th percentile)
 - Weather-adjusted demand prediction (Open-Meteo API)
 
@@ -42,6 +42,7 @@ The system processes:
 - Horizon-aware recommendations (immediate / scheduled / strategic)
 - Scenario-aware chiller sequencing (1–3 units)
 - Solar offset calculation
+- Bilingual AI assistant — Tamil & English (Groq Llama-3.3-70B)
 
 ### Impact Quantification
 - Projected energy variation (kWh)
@@ -54,7 +55,7 @@ The system processes:
 - `data_loader.py` → Data ingestion, WBT calculation, column preprocessing
 - `scenario_engine.py` → Physics-based scenario modifications
 - `diagnostics.py` → Z-Score anomaly detection and priority scoring
-- `forecasting.py` → RandomForest forecasting with confidence bands with shap explainabilty 
+- `forecasting.py` → RandomForest forecasting with confidence bands and SHAP explainability
 - `chiller_sequencing.py` → Dynamic chiller allocation
 - `optimization.py` → Horizon-aware recommendation engine
 - `renewable.py` → Solar offset calculations
@@ -69,7 +70,7 @@ The system processes:
 - Python 3.11
 - Pandas, NumPy
 - Scikit-learn (RandomForest)
-- shap
+- SHAP
 - Plotly, Streamlit
 - Groq API (Llama-3.3-70B)
 - Open-Meteo Weather API
@@ -92,6 +93,3 @@ Run the system:
 ```
 streamlit run streamlit_app.py
 ```
-
----
-

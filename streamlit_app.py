@@ -240,12 +240,7 @@ priority_score = diag["priority_score"]
 anomaly_ratio  = diag["anomaly_ratio"]
 anomaly_desc   = diag["anomaly_description"]
 
-@st.cache_data
-def get_forecast(scenario, horizon):
-    df_s = apply_scenario(get_data(), scenario)
-    return run_forecasting(df_s, horizon)
-
-fc_result = get_forecast(scenario, horizon)
+fc_result      = run_forecasting(df, horizon)
 future_pred    = fc_result["future_prediction"]
 upper_band     = fc_result["upper_band"]
 lower_band     = fc_result["lower_band"]
@@ -542,6 +537,8 @@ with tab5:
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
+    lang = st.radio("🌐 Response Language", ["English", "தமிழ்"], horizontal=True)
+
     hvac_context = f"""You are an expert HVAC systems engineer and energy analyst embedded in an industrial AI monitoring platform.
 You have real-time access to live system data for Central IT Park, Chennai.
 
@@ -558,7 +555,8 @@ CURRENT STATE:
 - Solar Offset: {solar_generated:.0f} kWh | Est. Cost Savings: ₹{cost_saved:,.0f} | CO₂ Avoided: {co2_saved:.0f} kg
 - SHAP Top Driver: {list(shap_importance.keys())[0] if shap_importance else 'N/A'} ({list(shap_importance.values())[0] if shap_importance else 'N/A'}% influence)
 
-RULES: Technical precision. HVAC industry terminology. Reference live data. 6 sentences max unless asked for more. Flag iKW-TR > 0.75 automatically."""
+RULES: Technical precision. HVAC industry terminology. Reference live data. 6 sentences max unless asked for more. Flag iKW-TR > 0.75 automatically.
+{"Respond in Tamil language only. Use technical HVAC terms but explain in Tamil." if lang == "தமிழ்" else "Respond in English only."}"""
 
     chat_html = "<div class='chat-wrapper'>"
     if not st.session_state.chat_history:
