@@ -74,7 +74,7 @@ The system processes:
 - Plotly, Streamlit
 - Groq API (Llama-3.3-70B)
 - Open-Meteo Weather API
-
+- Docker
 ---
 
 ## Setup
