@@ -588,7 +588,7 @@ RULES: Technical precision. HVAC industry terminology. Reference live data. 6 se
         try:
             with st.spinner("⚡ Analyzing..."):
                 resp = groq_client.chat.completions.create(
-                    model="llama-3.3-70b-versatile", messages=msgs,
+                    model="llama-3.1-8b-instant", messages=msgs,
                     temperature=0.4, max_tokens=512)
             reply = resp.choices[0].message.content
             st.session_state.chat_history.append({"role": "assistant", "content": reply})
